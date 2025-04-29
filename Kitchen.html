@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>คำสั่งซื้อในครัว</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #d35400;
+      text-align: center;
+    }
+
+    .order {
+      background: white;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .order ul {
+      padding-left: 1.2rem;
+      list-style-type: none;
+    }
+
+    .order h3 {
+      margin-top: 0;
+      color: #e67e22;
+    }
+
+    .order p {
+      margin: 5px 0;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📦 คำสั่งซื้อในครัว</h1>
+
+<div id="orders"></div>
+
+<script>
+  // ฟังก์ชันเพื่อลบคำสั่งซื้อจาก localStorage
+  function deleteOrder(index) {
+    const orders = JSON.parse(localStorage.getItem("kitchenOrders") || "[]");
+
+    // ลบคำสั่งซื้อที่เลือก
+    orders.splice(index, 1);
+
+    // บันทึกคำสั่งซื้อใหม่กลับไปยัง localStorage
+    localStorage.setItem("kitchenOrders", JSON.stringify(orders));
+  }
+
+  // ฟังก์ชันเพื่อโหลดคำสั่งซื้อจาก localStorage และแสดงบนหน้า
+  function loadOrders() {
+    const orders = JSON.parse(localStorage.getItem("kitchenOrders") || "[]");
+    const ordersContainer = document.getElementById("orders");
+    ordersContainer.innerHTML = ""; // เคลียร์การแสดงผลเดิม
+
+    // แสดงคำสั่งซื้อ
+    if (orders.length > 0) {
+      orders.forEach((order, index) => {
+        const orderDiv = document.createElement("div");
+        orderDiv.className = "order";
+        orderDiv.innerHTML = `
+          <h3>🕒 เวลา: ${order.time}</h3>
+          <p><strong>ชื่อลูกค้า:</strong> ${order.customer.name}</p>
+          <p><strong>เบอร์โทรศัพท์:</strong> ${order.customer.phone}</p>
+          <p><strong>ที่อยู่จัดส่ง:</strong> ${order.customer.address}</p>
+          <h4>รายการอาหาร:</h4>
+          <ul>
+            ${order.items.map(item => `<li>${item.name} x ${item.qty}</li>`).join("")}
+          </ul>
+          <button class="delete-btn" onclick="deleteOrder(${index})">ลบคำสั่งซื้อ</button>
+        `;
+        ordersContainer.appendChild(orderDiv);
+      });
+    } else {
+      ordersContainer.innerHTML = "<p>ยังไม่มีคำสั่งซื้อครับ!</p>";
+    }
+  }
+
+  // เรียกใช้ฟังก์ชันโหลดคำสั่งซื้อเมื่อโหลดหน้า
+  loadOrders();
+
+  // ตั้งเวลาให้รีเฟรชข้อมูลทุกๆ 3 วินาที
+  setInterval(loadOrders, 3000);
+</script>
+
+</body>
+</html>

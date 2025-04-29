@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เมนูร้านอาหาร</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #fff9f0;
+    }
+
+    header {
+      background: #ff914d;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .item {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .item h3 {
+      margin: 0.5rem 0;
+    }
+
+    button {
+      padding: 0.4rem 0.8rem;
+      background: #ff914d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0 2px;
+    }
+
+    #cart {
+      background: #fff3e6;
+      padding: 1rem;
+      border-top: 2px solid #ff914d;
+    }
+
+    #cart ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    #cart li {
+      margin: 0.3rem 0;
+    }
+
+    #submit-btn {
+      margin-top: 1rem;
+    }
+
+    /* Form Styling */
+    .form-section {
+      margin: 1rem 0;
+    }
+
+    .form-section input {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+<header>🍜 เมนูร้านอาหาร BARAKAT</header>
+
+<section class="menu" id="menu"></section>
+
+<section id="cart">
+  <h2>🛒 ตะกร้าของคุณ</h2>
+  <ul id="cart-list"></ul>
+  <p id="total">รวม: 0 บาท</p>
+</section>
+
+<!-- ฟอร์มกรอกข้อมูลลูกค้า -->
+<section class="form-section">
+  <h3>ข้อมูลลูกค้า</h3>
+  <input type="text" id="customer-name" placeholder="ชื่อ" required>
+  <input type="tel" id="customer-phone" placeholder="เบอร์โทรศัพท์" required>
+  <input type="text" id="customer-address" placeholder="ที่อยู่จัดส่ง" required>
+</section>
+
+<button id="submit-btn">ยืนยันการสั่งซื้อ</button>
+
+<script>
+  const menuData = [
+    { id: 1, name: "ข้าวผัดทะเล", price: 60, img: "https://source.unsplash.com/200x120/?fried-rice" },
+    { id: 2, name: "ข้าวกระเพรา", price: 55, img: "https://source.unsplash.com/200x120/?pad-thai" },
+    { id: 3, name: "ข้าวเครื่องแกง", price: 70, img: "https://source.unsplash.com/200x120/?tom-yum" },
+    { id: 4, name: "ข้าวผัดน้ำพริกเผา", price: 40, img: "https://source.unsplash.com/200x120/?som-tum" },
+    { id: 5, name: "ข้าวผัดน้ำพริกปลาทู", price: 40, img: "https://source.unsplash.com/200x120/?som-tum" },
+    { id: 6, name: "ข้าวผัดน้ำพริก", price: 40, img: "https://source.unsplash.com/200x120/?fried-rice" },
+    { id: 7, name: "ข้าวผัดปลากระป๋อง", price: 40, img: "https://source.unsplash.com/200x120/?fried-rice" },
+    { id: 8, name: "ข้าวผัดต้มยำไก่", price: 40, img: "https://source.unsplash.com/200x120/?pad-thai" },
+    { id: 9, name: "ข้าวคลุกเครื่องแกงไก่", price: 40, img: "https://source.unsplash.com/200x120/?tom-yum" },
+    { id: 10, name: "ข้าวผัดพริกไก่", price: 40, img: "https://source.unsplash.com/200x120/?som-tum" },
+    { id: 11, name: "ข้าวไก่ทอดกระเทียม", price: 40, img: "https://source.unsplash.com/200x120/?fried-rice" },
+    { id: 12, name: "ข้าวเนื้อแดง", price: 40, img: "https://source.unsplash.com/200x120/?fried-rice" },
+  ];
+
+  const cart = {};
+
+  const menuDiv = document.getElementById("menu");
+  const cartList = document.getElementById("cart-list");
+  const totalEl = document.getElementById("total");
+
+  function renderMenu() {
+    menuData.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <img src="${item.img}" alt="${item.name}">
+        <h3>${item.name}</h3>
+        <p>${item.price} บาท</p>
+        <button onclick="addToCart(${item.id})">เพิ่ม</button>
+      `;
+      menuDiv.appendChild(div);
+    });
+  }
+
+  function addToCart(id) {
+    if (cart[id]) {
+      cart[id].qty += 1;
+    } else {
+      const item = menuData.find(i => i.id === id);
+      cart[id] = { ...item, qty: 1 };
+    }
+    renderCart();
+  }
+
+  function renderCart() {
+    cartList.innerHTML = "";
+    let total = 0;
+    Object.values(cart).forEach(item => {
+      const li = document.createElement("li");
+      li.innerHTML = `${item.name} - ${item.price} บาท x ${item.qty}`;
+      cartList.appendChild(li);
+      total += item.price * item.qty;
+    });
+    totalEl.textContent = `รวม: ${total} บาท`;
+  }
+
+  document.getElementById("submit-btn").addEventListener("click", () => {
+    const items = Object.values(cart);
+    if (items.length === 0) {
+      alert("กรุณาเลือกอาหารก่อนครับ 🍽️");
+      return;
+    }
+
+    const name = document.getElementById("customer-name").value;
+    const phone = document.getElementById("customer-phone").value;
+    const address = document.getElementById("customer-address").value;
+
+    if (!name || !phone || !address) {
+      alert("กรุณากรอกข้อมูลลูกค้าให้ครบถ้วน");
+      return;
+    }
+
+    // สร้างข้อมูลคำสั่งซื้อ
+    const orderData = {
+      time: new Date().toLocaleString(),
+      customer: { name, phone, address },
+      items: items.map(i => ({ name: i.name, qty: i.qty }))
+    };
+
+    // บันทึกคำสั่งซื้อใน localStorage
+    const orders = JSON.parse(localStorage.getItem("kitchenOrders") || "[]");
+    orders.push(orderData);
+    localStorage.setItem("kitchenOrders", JSON.stringify(orders));
+
+    alert("การสั่งซื้อของคุณได้รับการยืนยันแล้ว ขอบคุณครับ 😊");
+    window.location.href = "thank-you.html";  // เปลี่ยนไปยังหน้าขอบคุณ
+  });
+
+  renderMenu();
+</script>
+
+</body>
+</html>
